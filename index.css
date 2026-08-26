@@ -49,31 +49,44 @@ body {
 
 /* ---------------- App bar ---------------- */
 .topbar {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 9px;
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 8px 10px;
+  padding: 10px 12px;
   box-shadow: var(--shadow-sm);
 }
 .logo {
-  height: 30px;
+  height: 15px;
   width: auto;
   object-fit: contain;
-  background: var(--card-2);
-  border: 1px solid var(--line);
-  border-radius: 7px;
-  padding: 2px 6px;
   flex-shrink: 0;
 }
-.brand { flex: 1; min-width: 0; }
+.logo-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-self: start;
+  min-width: 0;
+}
+.logo-syafiq {
+  height: 32px;
+}
+.brand {
+  text-align: center;
+  min-width: 0;
+}
 .brand h1 {
   font-size: 16px;
   font-weight: 800;
   letter-spacing: 0.2px;
   line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .brand p {
   font-size: 10px;
@@ -100,7 +113,7 @@ body {
   border: 1px solid var(--line);
   background: var(--card-2);
   color: var(--muted);
-  flex-shrink: 0;
+  justify-self: end;
 }
 .pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 .pill-ok {
