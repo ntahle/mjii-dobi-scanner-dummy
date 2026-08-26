@@ -79,8 +79,8 @@ body {
   text-align: center;
   min-width: 0;
 }
-.brand h2 {
-  font-size: 16px;
+.brand h1 {
+  font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.2px;
   line-height: 1.1;
