@@ -38,6 +38,17 @@ const video = $("video");
 const canvas = $("canvas");
 const ctx = canvas.getContext("2d", { willReadFrequently: true });
 
+/* ---------------- Scan & Pay views ---------------- */
+const VIEWS = ["idle", "scanning", "confirm", "invalid", "success"];
+
+function showState(name) {
+  VIEWS.forEach((v) => {
+    $("view-" + v).hidden = v !== name;
+  });
+  // The camera is only visible while actually scanning
+  $("scanner-card").style.display = name === "scanning" ? "" : "none";
+}
+
 /* ================= MQTT (mqtt.js) ================= */
 let mqttClient = null;
 
@@ -125,46 +136,45 @@ function handleScan(raw) {
   state.lastDecodeAt = now;
 
   const value = parseCodeValue(raw);
-  if (value === null) {
-    setPayment("warn", "⚠️", "Not a payment code", 'Scanned: "' + String(raw).slice(0, 40) + '"');
-    log('Ignored non-numeric QR: "' + String(raw).slice(0, 40) + '"', "warn");
-    return;
-  }
-
   if (value === CONFIG.expectedValue) {
-    setPayment(
-      "ok",
-      "✅",
-      "Payment confirmed!",
-      'Sending "' + CONFIG.command + '" to ' + CONFIG.topic
-    );
-    log('Valid QR value ' + value + ' → sending "' + CONFIG.command + '"', "success");
-    publishCommand(CONFIG.command);
+    // Valid payment QR -> show confirmation
+    stopCamera();
+    state.pendingValue = value;
+    $("confirm-value").textContent = "RM " + value.toFixed(2);
+    showState("confirm");
+    beep(true);
+    log("Valid QR value " + value + " — awaiting confirmation");
   } else {
-    setPayment(
-      "err",
-      "❌",
-      "Invalid code",
-      "Expected " + CONFIG.expectedValue + ", got " + value
-    );
-    log("Invalid QR value " + value + " (expected " + CONFIG.expectedValue + ")", "error");
+    // Anything else -> invalid QR
+    stopCamera();
+    $("invalid-text").textContent = "Invalid QR code";
+    $("invalid-sub").textContent = "Please scan the QR code on the machine";
+    showState("invalid");
+    beep(false);
+    log('Invalid QR: "' + String(raw).slice(0, 40) + '"', "warn");
   }
 }
 
-function setPayment(state_, icon, title, sub) {
-  $("pay-card").className = "card pay-card pay-" + state_;
-  $("pay-icon").textContent = icon;
-  $("pay-title").textContent = title;
-  $("pay-sub").textContent = sub;
-  if (state_ !== "wait") beep(state_ === "ok");
+function confirmPayment() {
+  if (publishCommand(CONFIG.command)) {
+    showState("success");
+    log('Payment sent: "' + CONFIG.command + '" → ' + CONFIG.topic, "success");
+    setTimeout(() => showState("idle"), 2500);
+  } else {
+    $("invalid-text").textContent = "Payment failed";
+    $("invalid-sub").textContent = "Not connected to MQTT — check the connection";
+    showState("invalid");
+  }
 }
 
 
 /* ================= Camera + jsQR loop ================= */
 async function startCamera() {
-  $("cam-err").hidden = true;
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    showCamError("Camera API not available — are you on http://localhost or https?");
+    $("invalid-text").textContent = "Camera unavailable";
+    $("invalid-sub").textContent = "No camera found — open this page on http://localhost or https.";
+    showState("invalid");
+    log("Camera API not available", "error");
     return;
   }
   try {
@@ -178,21 +188,17 @@ async function startCamera() {
     state.cameraOn = true;
     state.scanning = true;
     $("cam-idle").style.display = "none";
-    $("btn-cam").textContent = "■ Stop Camera";
+    $("live-badge").classList.add("on");
+    $("live-text").textContent = "Live";
+    showState("scanning");
     log("Camera started");
     requestAnimationFrame(tick);
   } catch (err) {
-    showCamError(
-      "Camera error: " + err.message + " — use 'Simulate' or the manual input instead."
-    );
+    $("invalid-text").textContent = "Camera error";
+    $("invalid-sub").textContent = err.message + " — allow camera access and try again.";
+    showState("invalid");
     log("Camera error: " + err.message, "error");
   }
-}
-
-function showCamError(msg) {
-  const el = $("cam-err");
-  el.hidden = false;
-  el.textContent = msg;
 }
 
 function stopCamera() {
@@ -204,7 +210,8 @@ function stopCamera() {
   }
   video.srcObject = null;
   $("cam-idle").style.display = "flex";
-  $("btn-cam").textContent = "▶ Start Camera";
+  $("live-badge").classList.remove("on");
+  $("live-text").textContent = "Standby";
 }
 
 function tick() {
@@ -253,21 +260,22 @@ function beep(ok) {
 }
 
 /* ================= Events ================= */
-$("btn-cam").addEventListener("click", () => {
+$("btn-pay").addEventListener("click", () => {
   state.cameraOn ? stopCamera() : startCamera();
 });
-$("btn-sim").addEventListener("click", () => {
-  handleScan(String(CONFIG.expectedValue));
+$("btn-stop").addEventListener("click", () => {
+  stopCamera();
+  showState("idle");
 });
-$("btn-manual").addEventListener("click", () => {
-  const v = $("manual-code").value.trim();
-  if (v) handleScan(v);
+$("btn-confirm-pay").addEventListener("click", confirmPayment);
+$("btn-confirm-cancel").addEventListener("click", () => {
+  showState("idle");
 });
-$("manual-code").addEventListener("keydown", (e) => {
-  if (e.key === "Enter") $("btn-manual").click();
+$("btn-retry").addEventListener("click", () => {
+  startCamera();
 });
 
 /* ================= Init ================= */
+showState("idle");
 connectMqtt();
-setPayment("wait", "🔍", "Waiting for QR code", "Scan the QR code on the machine");
 

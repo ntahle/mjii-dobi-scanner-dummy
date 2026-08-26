@@ -9,22 +9,30 @@
 <body>
   <div class="app">
 
-    <!-- Header -->
+    <!-- App bar: logo · LaundryPay · MQTT status -->
     <header class="topbar">
+      <img src="logo.png" alt="MARA Japan Industrial Institute (MJII)" class="logo" />
       <div class="brand">
-        <span class="brand-icon">🧺</span>
-        <div>
-          <h1>LaundryPay</h1>
-          <p>QR Payment Scanner</p>
-        </div>
+        <h1>LaundryPay</h1>
+        <p>QR Payment Scanner</p>
       </div>
       <div id="conn-pill" class="pill pill-offline" title="MQTT connection status">
         <span class="dot"></span><span id="conn-text">offline</span>
       </div>
     </header>
 
-    <!-- Camera scanner -->
-    <section class="card scanner-card">
+    <!-- Camera scanner (visible only while scanning) -->
+    <section class="card scanner-card" id="scanner-card" style="display:none">
+      <div class="card-head">
+        <div class="card-head-title">
+          <span class="card-head-icon">📷</span>
+          Camera Scanner
+        </div>
+        <span class="live-badge" id="live-badge">
+          <span class="live-dot"></span><span id="live-text">Standby</span>
+        </span>
+      </div>
+
       <div class="cam-box" id="cam-box">
         <video id="video" playsinline muted></video>
         <canvas id="canvas" hidden></canvas>
@@ -35,29 +43,61 @@
         </div>
         <div id="cam-idle" class="cam-idle">
           <div class="cam-idle-icon">📷</div>
-          <p>Camera is off</p>
+          <p>Point the camera at the QR code</p>
         </div>
-        <div id="cam-err" class="cam-err" hidden></div>
-      </div>
-      <div class="btn-row">
-        <button id="btn-cam" class="btn btn-primary">▶ Start Camera</button>
-        <button id="btn-sim" class="btn btn-ghost">Simulate "5"</button>
       </div>
     </section>
 
-    <!-- Payment status -->
-    <section id="pay-card" class="card pay-card pay-wait">
-      <div class="pay-icon" id="pay-icon">🔍</div>
-      <div class="pay-title" id="pay-title">Waiting for QR code</div>
-      <div class="pay-sub" id="pay-sub">Scan the QR code on the machine</div>
+    <!-- Scan & Pay flow -->
+    <section class="card action-card">
+
+      <!-- Idle -->
+      <div id="view-idle" class="view">
+        <button id="btn-pay" class="btn btn-primary btn-lg">
+          <span class="btn-icon">💳</span> Pay
+        </button>
+        <p class="view-hint">Tap Pay, then scan the QR code on the machine</p>
+      </div>
+
+      <!-- Scanning -->
+      <div id="view-scanning" class="view" hidden>
+        <p class="view-hint">Scanning… point the camera at the QR code</p>
+        <button id="btn-stop" class="btn btn-ghost">Cancel</button>
+      </div>
+
+      <!-- Confirm payment -->
+      <div id="view-confirm" class="view" hidden>
+        <div class="confirm-block">
+          <span class="confirm-label">Amount to pay</span>
+          <span class="confirm-value" id="confirm-value">RM 5.00</span>
+          <span class="confirm-meta">Laundry machine · QR #5</span>
+        </div>
+        <button id="btn-confirm-pay" class="btn btn-primary">
+          <span class="btn-icon">✓</span> Confirm Payment
+        </button>
+        <button id="btn-confirm-cancel" class="btn btn-ghost">Cancel</button>
+      </div>
+
+      <!-- Invalid QR -->
+      <div id="view-invalid" class="view" hidden>
+        <div class="state-icon err">✕</div>
+        <p class="state-title" id="invalid-text">Invalid QR code</p>
+        <p class="state-sub" id="invalid-sub">Please scan the QR code on the machine</p>
+        <button id="btn-retry" class="btn btn-primary">Scan Again</button>
+      </div>
+
+      <!-- Success -->
+      <div id="view-success" class="view" hidden>
+        <div class="state-icon ok">✓</div>
+        <p class="state-title">Payment Successful</p>
+        <p class="state-sub">Machine is starting…</p>
+      </div>
     </section>
 
-    <!-- Manual input (fallback when no camera) -->
-    <section class="card manual-card">
-      <input id="manual-code" class="manual-input" type="text" inputmode="numeric"
-             placeholder="Or type the code, e.g. 5" autocomplete="off" />
-      <button id="btn-manual" class="btn btn-accent">Pay</button>
-    </section>
+    <!-- Footer -->
+    <footer class="footer">
+      MARA Japan Industrial Institute (MJII) · LaundryPay
+    </footer>
   </div>
 
   <script src="vendor/jsqr.js"></script>
