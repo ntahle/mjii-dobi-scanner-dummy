@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>LaundryPay · QR Payment Scanner</title>
+<link rel="stylesheet" href="index.css" />
+</head>
+<body>
+  <div class="app">
+
+    <!-- Header -->
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-icon">🧺</span>
+        <div>
+          <h1>LaundryPay</h1>
+          <p>QR Payment Scanner</p>
+        </div>
+      </div>
+      <div id="conn-pill" class="pill pill-offline" title="MQTT connection status">
+        <span class="dot"></span><span id="conn-text">offline</span>
+      </div>
+    </header>
+
+    <!-- Camera scanner -->
+    <section class="card scanner-card">
+      <div class="cam-box" id="cam-box">
+        <video id="video" playsinline muted></video>
+        <canvas id="canvas" hidden></canvas>
+        <div class="frame">
+          <div class="corner tl"></div><div class="corner tr"></div>
+          <div class="corner bl"></div><div class="corner br"></div>
+          <div class="scanline"></div>
+        </div>
+        <div id="cam-idle" class="cam-idle">
+          <div class="cam-idle-icon">📷</div>
+          <p>Camera is off</p>
+        </div>
+        <div id="cam-err" class="cam-err" hidden></div>
+      </div>
+      <div class="btn-row">
+        <button id="btn-cam" class="btn btn-primary">▶ Start Camera</button>
+        <button id="btn-sim" class="btn btn-ghost">Simulate "5"</button>
+      </div>
+    </section>
+
+    <!-- Payment status -->
+    <section id="pay-card" class="card pay-card pay-wait">
+      <div class="pay-icon" id="pay-icon">🔍</div>
+      <div class="pay-title" id="pay-title">Waiting for QR code</div>
+      <div class="pay-sub" id="pay-sub">Scan the QR code on the machine</div>
+    </section>
+
+    <!-- Manual input (fallback when no camera) -->
+    <section class="card manual-card">
+      <input id="manual-code" class="manual-input" type="text" inputmode="numeric"
+             placeholder="Or type the code, e.g. 5" autocomplete="off" />
+      <button id="btn-manual" class="btn btn-accent">Pay</button>
+    </section>
+
+    <!-- Activity log -->
+    <section class="card log-card">
+      <div class="card-title">Activity Log</div>
+      <ul id="log"></ul>
+    </section>
+
+    <!-- Config -->
+    <details class="card config-card">
+      <summary>⚙️ MQTT config</summary>
+      <div id="cfg-view" class="cfg-view"></div>
+      <p class="hint">
+        The browser needs a secure context (https or <code>localhost</code>) for the camera, so serve
+        this folder with e.g. <code>python -m http.server 8000</code> then open
+        <code>http://localhost:8000</code>.
+      </p>
+    </details>
+  </div>
+
+  <script src="vendor/jsqr.js"></script>
+  <script src="vendor/mqtt.min.js"></script>
+  <script src="index.js"></script>
+</body>
+</html>
