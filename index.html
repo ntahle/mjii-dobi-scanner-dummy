@@ -58,23 +58,6 @@
              placeholder="Or type the code, e.g. 5" autocomplete="off" />
       <button id="btn-manual" class="btn btn-accent">Pay</button>
     </section>
-
-    <!-- Activity log -->
-    <section class="card log-card">
-      <div class="card-title">Activity Log</div>
-      <ul id="log"></ul>
-    </section>
-
-    <!-- Config -->
-    <details class="card config-card">
-      <summary>⚙️ MQTT config</summary>
-      <div id="cfg-view" class="cfg-view"></div>
-      <p class="hint">
-        The browser needs a secure context (https or <code>localhost</code>) for the camera, so serve
-        this folder with e.g. <code>python -m http.server 8000</code> then open
-        <code>http://localhost:8000</code>.
-      </p>
-    </details>
   </div>
 
   <script src="vendor/jsqr.js"></script>

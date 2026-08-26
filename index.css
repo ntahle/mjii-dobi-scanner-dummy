@@ -111,26 +111,3 @@ body {
 }
 .manual-input:focus { border-color: var(--green); }
 
-/* ---- log ---- */
-.card-title { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 8px; }
-#log {
-  list-style: none; max-height: 180px; overflow-y: auto;
-  display: flex; flex-direction: column; gap: 4px;
-}
-#log li {
-  font-size: 12px; font-family: Consolas, monospace; color: var(--muted);
-  padding: 4px 8px; background: rgba(255, 255, 255, 0.03); border-radius: 6px; word-break: break-word;
-}
-#log li.success { color: var(--green); }
-#log li.error { color: var(--red); }
-#log li.warn { color: var(--amber); }
-
-/* ---- config ---- */
-.config-card summary { cursor: pointer; font-weight: 700; font-size: 14px; }
-.cfg-view table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12.5px; }
-.cfg-view td { padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
-.cfg-view td:first-child { color: var(--muted); width: 45%; }
-.cfg-view td:last-child { font-family: Consolas, monospace; word-break: break-all; }
-.hint { font-size: 12px; color: var(--muted); margin-top: 10px; line-height: 1.5; }
-.hint code { background: var(--card-2); padding: 2px 5px; border-radius: 4px; }
-

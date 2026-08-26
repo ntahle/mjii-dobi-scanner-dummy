@@ -37,7 +37,6 @@ const $ = (id) => document.getElementById(id);
 const video = $("video");
 const canvas = $("canvas");
 const ctx = canvas.getContext("2d", { willReadFrequently: true });
-const logEl = $("log");
 
 /* ================= MQTT (mqtt.js) ================= */
 let mqttClient = null;
@@ -227,11 +226,10 @@ function tick() {
 
 /* ================= Utilities ================= */
 function log(msg, cls) {
-  const li = document.createElement("li");
-  li.textContent = "[" + new Date().toLocaleTimeString() + "] " + msg;
-  if (cls) li.className = cls;
-  logEl.prepend(li);
-  while (logEl.children.length > 30) logEl.lastChild.remove();
+  const line = "[" + new Date().toLocaleTimeString() + "] " + msg;
+  if (cls === "error") console.error(line);
+  else if (cls === "warn") console.warn(line);
+  else console.log(line);
 }
 
 let audioCtx = null;
@@ -254,28 +252,6 @@ function beep(ok) {
   }
 }
 
-function esc(s) {
-  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-
-function renderConfig() {
-  const cfg = [
-    ["MQTT host", CONFIG.mqttHost],
-    ["Username", CONFIG.mqttUser],
-    ["Password", CONFIG.mqttPass.replace(/./g, "•")],
-    ["Topic", CONFIG.topic],
-    ["Expected QR value", CONFIG.expectedValue],
-    ["Command payload", CONFIG.command],
-    ["EMQX REST API", CONFIG.emqxApi],
-    ["App id", CONFIG.appId],
-    ["App secret", CONFIG.appSecret],
-  ];
-  $("cfg-view").innerHTML =
-    "<table>" +
-    cfg.map(([k, v]) => "<tr><td>" + esc(k) + "</td><td>" + esc(v) + "</td></tr>").join("") +
-    "</table>";
-}
-
 /* ================= Events ================= */
 $("btn-cam").addEventListener("click", () => {
   state.cameraOn ? stopCamera() : startCamera();
@@ -292,7 +268,6 @@ $("manual-code").addEventListener("keydown", (e) => {
 });
 
 /* ================= Init ================= */
-renderConfig();
 connectMqtt();
 setPayment("wait", "🔍", "Waiting for QR code", "Scan the QR code on the machine");
 
